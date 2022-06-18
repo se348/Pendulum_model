@@ -1,119 +1,68 @@
-import pygame
-from OpenGL.GLU import *
-from math import *
+import math
+import numpy as np
+import time
+from pyrr import Vector3, vector, vector3, matrix44
+from math import sin, cos, radians
 
 class Camera:
-    #0 - Z-axis
-    #1 - -Xaxis
-    #2 - -Z-axis
-    #3 - X-axis
+    #status
+        #0 =front
+        #1 =right
+        #2 = back
+        #3 =left
+        #4 = orginal
+    def __init__(self):
+        self.camera_pos = Vector3([0.0, 5.0, 25.0])
+        self.camera_front = Vector3([0.0, 0.0, -1.0])
+        self.camera_up = Vector3([0.0, 1.0, 0.0])
+        self.camera_right = Vector3([1.0, 0.0, 0.0])
+        self.i =0
+        self.status= 4
 
-    def __init__(self) -> None:
-        self.orientation =0
-        self.forward =30
-        self.eye=(0,0,30)
-        self.top_view =False
-        self.bottom_view =False
-    def update(self):
-        print("orientation" + str(self.orientation))
-        print("forward" + str(self.forward))
-        print(self.top_view)
-        print(self.bottom_view)
-        keys =pygame.key.get_pressed()
-        if self.top_view and self.bottom_view:
-            self.top_view =False
-            self.bottom_view= False
-            return self.orientational_method()
-        if keys[pygame.K_RIGHT]:
-            self.top_view =False
-            self.bottom_view= False
-            if self.orientation==0:
-                self.orientation =3 
+    def get_view_matrix(self):
+        #print(self.camera_pos, self.camera_pos + self.camera_front, self.camera_up)
+        print(self.camera_front)
+        print(self.camera_pos)
+        if self.status==1:
+            return matrix44.create_look_at(np.array([25.6, 4.79, 9.8]),np.array([24.72, 4.8, 9.3]), np.array([0,1,0]) )
+        if self.status==3:
+            return matrix44.create_look_at(np.array([-27.14, 12.23, -16.19]),np.array([-26.25 , 12.09, -15.76]), np.array([0,1,0]) )
+        if self.status ==2:
+            return matrix44.create_look_at(np.array([17.14, 13.06, -33.763]),np.array([16.63, 12.95, -32.89]), np.array([0,1,0]))
+        if self.status ==0:
+            return matrix44.create_look_at(np.array([-14.33, 4.84, 22.99]),np.array([-13.83, 4.83, 22.1351 ]), np.array([0,1,0]))
+        
+        return matrix44.create_look_at(self.camera_pos, self.camera_pos + self.camera_front, self.camera_up)
+
+    
+
+    def process_keyboard(self, direction, velocity, theta= None):
+        if direction == "FORWARD":
+            if self.status==4:
+                self.camera_pos += self.camera_front * velocity
             else:
-                self.orientation -=1
-            return self.orientational_method()
-        if keys[pygame.K_LEFT]:
-            self.top_view =False
-            self.bottom_view= False
-            if self.orientation==3:
-                self.orientation =0 
+                self.i -= 0.8
+        if direction == "BACKWARD":
+            if self.status ==4:
+                self.camera_pos -= self.camera_front * velocity
             else:
-                self.orientation +=1
-            return self.orientational_method()
-        if keys[pygame.K_UP] and self.top_view==False:
-            self.top_view =True
-            return self.orientational_method()
-        elif keys[pygame.K_DOWN] and self.bottom_view ==False:
-            self.bottom_view =True
-            return self.orientational_method()
-        elif keys[pygame.K_DOWN] and self.top_view==True:
-            self.top_view =False
-            return self.orientational_method()
-        elif keys[pygame.K_UP] and self.bottom_view==True:
-            self.bottom_view =False
-            return self.orientational_method()
-        if keys[pygame.K_w] and self.forward<50:
-            self.forward +=1
-            return self.orientational_method()
-        if keys[pygame.K_x] and self.forward>10:
-            self.forward -=1
-            return self.orientational_method()
-        return self.orientational_method()
-    def orientational_method(self):
-        if self.top_view and (self.orientation==0 or self.orientation==2):
-            return gluLookAt(0, self.forward, 0,0,0,0,0,0,1)
-        if self.bottom_view and (self.orientation==0 or self.orientation==2):
-            return gluLookAt(0, -self.forward, 0,0,0,0,0,0,1)
-        if self.top_view and (self.orientation==1 or self.orientation==3):
-            return gluLookAt(0, self.forward, 0,0,0,0,1,0,0)
-        if self.bottom_view and (self.orientation==1 or self.orientation==3):
-            return gluLookAt(0, -self.forward, 0,0,0,0,1,0,0)
-        elif self.orientation == 0 :
-            return gluLookAt(0, 4, self.forward,0,0,0,0,1,0)
-        elif self.orientation == 1:
-            return gluLookAt(-self.forward, 4, 0,0,0,0,0,1,0)
-        elif self.orientation == 2:
-            return gluLookAt(0, 4, -self.forward,0,0,0,0,1,0)
-        elif self.orientation == 3:
-            return gluLookAt(self.forward, 4, 0,0,0,0,0,1,0)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def __init__(self):
-#         self.eye =pygame.math.Vector3(0,0,-28)
-#         self.up =pygame.math.Vector3(0,1,0)
-#         self.right =pygame.math.Vector3(1,0,0)
-#         self.forward =pygame.math.Vector3(0,0,1)
-#         self.look =self.eye + self.forward
-#     def update(self,):
-#         keys =pygame.key.get_pressed()
-#         if keys[pygame.K_DOWN]:
-#             print(self.eye)
-#             self.eye -= self.forward
-#         if keys[pygame.K_UP]:
-#             self.eye += self.forward
-#         if keys[pygame.K_RIGHT]:
-#             self.eye += self.right
-#         if keys[pygame.K_LEFT]:
-#             self.eye -= self.right
-#         self.look =self.eye +self.forward
-#         gluLookAt(
-#             self.eye.x, self.eye.y,self.eye.z,
-#             self.look.x,self.look.y,self.look.z,
-#             self.up.x, self.up.y, self.up.z
-#         )
+                self.i +=0.8
+        if direction == "LEFT":
+            self.camera_pos -= self.camera_right * velocity
+        if direction == "RIGHT":
+            self.camera_pos += self.camera_right * velocity
+        if direction == "L_P":
+            self.i=0
+            if self.status ==0:
+                self.status =4
+            else:
+                self.status -=1
+            time.sleep(0.2)
+        if direction == "R_P":
+            self.i=0
+            if self.status ==4:
+                self.status =0
+            else:
+                self.status +=1
+            time.sleep(0.2)
+        
