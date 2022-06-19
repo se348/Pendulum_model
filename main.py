@@ -6,7 +6,7 @@ import pygame
 from OpenGL.GL import *
 from OpenGL.GL.shaders import compileProgram, compileShader
 import pyrr
-from helpers.texture_loader import load_texture_pygame
+from helpers.texture_loader import load_texture
 from helpers.obj_loader import LoadMesh
 
 from helpers.camera import Camera
